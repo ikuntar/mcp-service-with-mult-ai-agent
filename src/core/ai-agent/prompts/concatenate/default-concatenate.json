@@ -1,0 +1,39 @@
+{
+  "concatenatePrompts": [
+    {
+      "id": "dynamic-data",
+      "name": "动态数据注入",
+      "format": "fixed",
+      "content": "{{user_context}}",
+      "target": {
+        "promptId": "default-assistant",
+        "variableName": "context"
+      },
+      "mode": "append",
+      "metadata": {
+        "version": "1.0.0",
+        "description": "动态数据注入",
+        "tags": ["dynamic", "data"]
+      }
+    },
+    {
+      "id": "extra-info",
+      "name": "额外信息",
+      "format": "template",
+      "template": "额外信息：{{info}}",
+      "variables": [
+        { "name": "info", "type": "string", "required": true }
+      ],
+      "target": {
+        "promptId": "code-generator",
+        "variableName": "task"
+      },
+      "mode": "prepend",
+      "metadata": {
+        "version": "1.0.0",
+        "description": "任务前注入额外信息",
+        "tags": ["extra", "info"]
+      }
+    }
+  ]
+}

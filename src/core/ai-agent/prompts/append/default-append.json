@@ -1,0 +1,28 @@
+{
+  "appendPrompts": [
+    {
+      "id": "format-json",
+      "name": "JSON格式要求",
+      "format": "fixed",
+      "content": "请使用JSON格式返回结果：\n```json\n{\n  \"result\": \"...\",\n  \"confidence\": 0.85,\n  \"metadata\": {}\n}\n```",
+      "position": "after",
+      "metadata": {
+        "version": "1.0.0",
+        "description": "JSON格式输出要求",
+        "tags": ["format", "json"]
+      }
+    },
+    {
+      "id": "quality-check",
+      "name": "质量检查",
+      "format": "fixed",
+      "content": "质量检查清单：\n- 准确性\n- 完整性\n- 一致性\n\n请确保输出满足以上所有质量标准。",
+      "position": "after",
+      "metadata": {
+        "version": "1.0.0",
+        "description": "输出质量检查",
+        "tags": ["quality", "check"]
+      }
+    }
+  ]
+}

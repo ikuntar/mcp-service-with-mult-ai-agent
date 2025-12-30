@@ -1,0 +1,30 @@
+{
+  "systemPrompts": [
+    {
+      "id": "default-assistant",
+      "name": "默认助手",
+      "format": "fixed",
+      "content": "你是一位智能助手，请提供准确、有帮助的回答。",
+      "metadata": {
+        "version": "1.0.0",
+        "description": "默认系统提示词",
+        "tags": ["default", "assistant"]
+      }
+    },
+    {
+      "id": "code-generator",
+      "name": "代码生成器",
+      "format": "template",
+      "template": "你是一位专业的{{language}}开发者。\n任务：{{task}}\n要求：\n- 使用{{language}}最佳实践\n- 包含错误处理\n- 包含文档注释\n- 代码简洁清晰",
+      "variables": [
+        { "name": "language", "type": "string", "required": true, "default": "TypeScript" },
+        { "name": "task", "type": "string", "required": true }
+      ],
+      "metadata": {
+        "version": "1.0.0",
+        "description": "代码生成系统提示词",
+        "tags": ["code", "generator"]
+      }
+    }
+  ]
+}

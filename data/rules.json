@@ -1,0 +1,113 @@
+{
+  "token_user1:filesystem": {
+    "autoApprove": true,
+    "maxFileSize": 10
+  },
+  "token_user1:network": {
+    "autoApprove": false,
+    "approver": "admin",
+    "timeout": 30000
+  },
+  "token_user2:default": {
+    "autoApprove": true,
+    "maxCalls": 1000
+  },
+  "ce753517-8f18-4cb6-ba7e-728531929680:filesystem": {
+    "autoApprove": true,
+    "maxFileSize": 10
+  },
+  "ce753517-8f18-4cb6-ba7e-728531929680:network": {
+    "autoApprove": false,
+    "approver": "admin",
+    "timeout": 30000
+  },
+  "ce753517-8f18-4cb6-ba7e-728531929680:system": {
+    "autoApprove": true,
+    "allowedCommands": [
+      "ls",
+      "cat",
+      "echo"
+    ]
+  },
+  "e2feb54c-1387-42ab-a9c0-787a13329e89:filesystem": {
+    "autoApprove": true,
+    "maxFileSize": 10485760
+  },
+  "e2feb54c-1387-42ab-a9c0-787a13329e89:network": {
+    "autoApprove": true,
+    "timeout": 60000
+  },
+  "e2feb54c-1387-42ab-a9c0-787a13329e89:system": {
+    "autoApprove": true,
+    "allowedCommands": [
+      "*"
+    ]
+  },
+  "4bc191a7-f625-40ec-8c86-640a693665e8:filesystem": {
+    "autoApprove": true,
+    "maxFileSize": 1048576
+  },
+  "4bc191a7-f625-40ec-8c86-640a693665e8:network": {
+    "autoApprove": true,
+    "timeout": 60000
+  },
+  "4bc191a7-f625-40ec-8c86-640a693665e8:system": {
+    "autoApprove": true,
+    "allowedCommands": [
+      "ls",
+      "cat",
+      "echo"
+    ]
+  },
+  "cd3c143a-f41f-43ba-89dd-1c950d45588a:filesystem": {
+    "autoApprove": true,
+    "maxFileSize": 10
+  },
+  "cd3c143a-f41f-43ba-89dd-1c950d45588a:network": {
+    "autoApprove": false,
+    "approver": "admin",
+    "timeout": 30000
+  },
+  "cd3c143a-f41f-43ba-89dd-1c950d45588a:system": {
+    "autoApprove": true,
+    "allowedCommands": [
+      "ls",
+      "cat",
+      "echo"
+    ]
+  },
+  "ff46f48d-636a-4035-92d4-8f4a8468aa66:filesystem": {
+    "autoApprove": true,
+    "maxFileSize": 10485760
+  },
+  "ff46f48d-636a-4035-92d4-8f4a8468aa66:network": {
+    "autoApprove": true,
+    "timeout": 60000
+  },
+  "ff46f48d-636a-4035-92d4-8f4a8468aa66:system": {
+    "autoApprove": true,
+    "allowedCommands": [
+      "*"
+    ]
+  },
+  "59d2534b-e3e3-4d24-966f-0fc90b618027:filesystem": {
+    "autoApprove": true,
+    "maxFileSize": 1048576
+  },
+  "59d2534b-e3e3-4d24-966f-0fc90b618027:network": {
+    "autoApprove": true,
+    "timeout": 60000
+  },
+  "59d2534b-e3e3-4d24-966f-0fc90b618027:system": {
+    "autoApprove": true,
+    "allowedCommands": [
+      "ls",
+      "cat",
+      "echo"
+    ]
+  },
+  "user_token:filesystem": {
+    "autoApprove": true,
+    "maxFileSize": 1048576
+  }
+}
