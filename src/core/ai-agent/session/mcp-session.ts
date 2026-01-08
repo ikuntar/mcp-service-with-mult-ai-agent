@@ -496,4 +496,31 @@ export class MCPSession extends BaseSession {
       this.lastUpdate = Date.now();
     }
   }
+
+  /**
+   * 获取消息数量
+   */
+  getMessageCount(): number {
+    return this.messages.length;
+  }
+
+  /**
+   * 获取最近的助手回复
+   */
+  getLastAssistantResponse(): string | undefined {
+    const lastAssistant = [...this.messages].reverse().find(m => m.role === 'assistant');
+    return lastAssistant?.content;
+  }
+
+  /**
+   * 获取对话历史（格式化）
+   */
+  getConversationHistory(): string {
+    return this.messages
+      .map(msg => {
+        const role = msg.role === 'user' ? '用户' : msg.role === 'assistant' ? '助手' : '系统';
+        return `${role}: ${msg.content}`;
+      })
+      .join('\n\n');
+  }
 }

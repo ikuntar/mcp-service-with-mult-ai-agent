@@ -1,173 +1,131 @@
 /**
- * 组织架构工厂函数
- * 提供便捷的创建方法
+ * 工厂函数 - 精简版
+ * 支持协作组件接口和组合模式
  */
 
-import { OrganizationManager } from './manager';
-import { StructureManager } from './structure';
-import { OrganizationMemberImpl } from './member';
-import { 
-  OrganizationRole, 
-  OrganizationLevel, 
-  MemberStatus,
-  OrganizationStructure 
-} from './types';
+import { globalOrganizationManager } from './global-manager';
+import { CollaborationComponentConfig, ProxyExecutionContext, ProxyExecutionResult } from './types';
+import { CollaborationComponent } from './collaboration-component';
+import { StandardCollaborationComponent } from './standard-collaboration-component';
+import { globalOptimizedUserSpaceManager } from '../user-space/user-space-optimized';
 
 /**
- * 创建组织管理器
+ * 创建协作组件
+ * 所有组件都继承Token生态权限
  */
-export function createOrganizationManager(config?: any): OrganizationManager {
-  return OrganizationManager.getInstance(config);
-}
-
-/**
- * 创建组织
- */
-export function createOrganization(
+export function createCollaborationComponent(
   id: string,
   name: string,
-  level: OrganizationLevel,
-  config?: any
-): StructureManager {
-  const manager = OrganizationManager.getInstance();
-  return manager.createOrganization(id, name, level, config);
-}
-
-/**
- * 创建成员
- */
-export function createMember(
-  name: string,
-  role: OrganizationRole,
-  level: OrganizationLevel,
   options: {
-    modelId?: string;
-    mcpEndpoint?: string;
-    capabilities?: string[];
-    permissions?: string[];
+    description?: string;
     metadata?: Record<string, any>;
-    parentId?: string;
-    teamId?: string;
-    departmentId?: string;
-    status?: MemberStatus;
-    personality?: string;
   } = {}
-): OrganizationMemberImpl {
-  const manager = OrganizationManager.getInstance();
-  return manager.createMember(name, role, level, options);
-}
-
-/**
- * 创建团队
- */
-export function createTeam(
-  id: string,
-  name: string,
-  config?: any
-): StructureManager {
-  return new StructureManager({
+): Promise<CollaborationComponent> {
+  const config: CollaborationComponentConfig = {
     id,
     name,
-    level: OrganizationLevel.TEAM,
-    config: {
-      maxTeamSize: 50,
-      ...config
-    }
-  });
-}
-
-/**
- * 创建部门
- */
-export function createDepartment(
-  id: string,
-  name: string,
-  config?: any
-): StructureManager {
-  return new StructureManager({
-    id,
-    name,
-    level: OrganizationLevel.DEPARTMENT,
-    config: {
-      maxTeamSize: 200,
-      ...config
-    }
-  });
-}
-
-/**
- * 快速创建默认组织结构
- */
-export function createDefaultOrganizationStructure(): {
-  org: StructureManager;
-  team1: StructureManager;
-  team2: StructureManager;
-  members: OrganizationMemberImpl[];
-} {
-  const manager = OrganizationManager.getInstance();
-  const org = manager.createDefaultOrganization();
-  
-  // 获取团队
-  const team1 = org.getInternalStructure().subStructures.get('team-alpha');
-  const team2 = org.getInternalStructure().subStructures.get('team-beta');
-  
-  // 创建一些示例成员
-  const members = [];
-  
-  if (team1) {
-    const member1 = createMember('张三', OrganizationRole.TECH_LEAD, OrganizationLevel.TEAM, {
-      teamId: 'team-alpha',
-      capabilities: ['typescript', 'nodejs', 'architecture'],
-      permissions: ['read', 'write', 'execute', 'review']
-    });
-    
-    const member2 = createMember('李四', OrganizationRole.MEMBER, OrganizationLevel.TEAM, {
-      teamId: 'team-alpha',
-      capabilities: ['typescript', 'react'],
-      permissions: ['read', 'execute']
-    });
-    
-    members.push(member1, member2);
-  }
-  
-  if (team2) {
-    const member3 = createMember('王五', OrganizationRole.LEAD_ENGINEER, OrganizationLevel.TEAM, {
-      teamId: 'team-beta',
-      capabilities: ['python', 'ml', 'data'],
-      permissions: ['read', 'write', 'execute', 'review', 'design']
-    });
-    
-    const member4 = createMember('赵六', OrganizationRole.MEMBER, OrganizationLevel.TEAM, {
-      teamId: 'team-beta',
-      capabilities: ['python', 'database'],
-      permissions: ['read', 'execute']
-    });
-    
-    members.push(member3, member4);
-  }
-  
-  // 添加成员到团队
-  const team1Manager = team1 ? new StructureManager({
-    id: team1.id,
-    name: team1.name,
-    level: team1.level,
-    config: team1.config
-  }) : null;
-  
-  const team2Manager = team2 ? new StructureManager({
-    id: team2.id,
-    name: team2.name,
-    level: team2.level,
-    config: team2.config
-  }) : null;
-  
-  // 注意：这里需要通过manager的importMembers方法添加成员
-  // 简化版本，直接返回成员供后续使用
-  
-  return {
-    org,
-    team1: team1Manager!,
-    team2: team2Manager!,
-    members
+    description: options.description,
+    metadata: options.metadata
   };
+
+  return globalOrganizationManager.registerCollaborationComponent(config);
 }
+
+/**
+ * 创建组织成员
+ */
+export function createOrganizationMember(
+  name: string,
+  userToken: string,
+  metadata?: Record<string, any>,
+  role: 'admin' | 'member' = 'member'
+) {
+  return globalOrganizationManager.createOrganizationMember(name, userToken, metadata, role);
+}
+
+/**
+ * 创建代理执行
+ */
+export function createProxyExecution(
+  memberToken: string,
+  componentId: string,
+  toolName: string,
+  args: any,
+  context?: Partial<ProxyExecutionContext>
+) {
+  return globalOrganizationManager.proxyExecute(memberToken, componentId, toolName, args, context);
+}
+
+/**
+ * 快速创建标准协作组件
+ */
+export const createStandardCollaborationComponent = {
+  // 开发者组件
+  developer: (id: string, name: string) => createCollaborationComponent(
+    id,
+    name,
+    {
+      description: `开发者组件: ${name}`
+    }
+  ),
+
+  // 审查者组件
+  reviewer: (id: string, name: string) => createCollaborationComponent(
+    id,
+    name,
+    {
+      description: `审查者组件: ${name}`
+    }
+  ),
+
+  // 管理者组件
+  manager: (id: string, name: string) => createCollaborationComponent(
+    id,
+    name,
+    {
+      description: `管理者组件: ${name}`
+    }
+  ),
+
+  // 安全组件
+  security: (id: string, name: string) => createCollaborationComponent(
+    id,
+    name,
+    {
+      description: `安全组件: ${name}`
+    }
+  ),
+
+  // 自定义组件
+  custom: (id: string, name: string, description?: string) => 
+    createCollaborationComponent(
+      id,
+      name,
+      {
+        description: description || `自定义组件: ${name}`
+      }
+    )
+};
+
+/**
+ * 创建自定义协作组件工厂
+ * 允许用户创建自己的协作组件实现
+ */
+export function createCustomCollaborationComponent<T extends CollaborationComponent>(
+  factory: (config: CollaborationComponentConfig) => T,
+  config: CollaborationComponentConfig
+): Promise<T> {
+  return globalOrganizationManager.registerCollaborationComponent(config, factory) as Promise<T>;
+}
+/**
+ * 快速创建标准角色成员
+ */
+export const createStandardMember = {
+  // 创建管理员
+  admin: (name: string, userToken: string, metadata?: Record<string, any>) => 
+    createOrganizationMember(name, userToken, metadata, 'admin'),
+  
+  // 创建普通成员
+  member: (name: string, userToken: string, metadata?: Record<string, any>) => 
+    createOrganizationMember(name, userToken, metadata, 'member')
+};

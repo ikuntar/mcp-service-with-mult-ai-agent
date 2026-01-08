@@ -84,21 +84,15 @@ export const validateTokenTool: Tool = {
     try {
       const { token } = args;
       
-      if (!token) {
-        return {
-          content: [{ type: 'text', text: '错误: 必须提供token参数' }],
-          isError: true
-        };
-      }
+      // 使用TokenManager的统一验证方法
+      const result = globalTokenManager.validateTokenDetailed(token);
 
-      const role = globalTokenManager.validateToken(token);
-
-      if (role) {
+      if (result.isValid) {
         return {
           content: [
             {
               type: 'text',
-              text: `✅ Token有效\n\nToken: ${token}\n角色: ${role}\n状态: 有效`
+              text: `✅ Token有效\n\nToken: ${token}\n角色: ${result.role}\n状态: 有效`
             }
           ]
         };
@@ -107,7 +101,7 @@ export const validateTokenTool: Tool = {
           content: [
             {
               type: 'text',
-              text: `❌ Token无效或已过期\n\nToken: ${token}\n状态: 无效/过期/已禁用`
+              text: `❌ Token无效或已过期\n\nToken: ${token}\n状态: ${result.error || '无效/过期/已禁用'}`
             }
           ]
         };

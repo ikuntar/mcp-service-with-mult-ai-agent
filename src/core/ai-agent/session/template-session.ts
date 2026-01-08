@@ -379,4 +379,98 @@ export class TemplateSession extends BaseSession {
   getWorkflow(): WorkflowTemplate {
     return { ...this.workflow };
   }
+
+  /**
+   * 重置会话（保留工作流）
+   */
+  reset(): void {
+    this.messages = [];
+    this.currentStepIndex = 0;
+    this.stepResults = [];
+    this.currentStepId = null;
+    this.variables = { ...this.variables }; // 保留初始变量
+    this.lastUpdate = Date.now();
+  }
+
+  /**
+   * 获取当前步骤ID
+   */
+  getCurrentStepId(): string | null {
+    return this.currentStepId;
+  }
+
+  /**
+   * 获取当前变量
+   */
+  getCurrentVariables(): Record<string, any> {
+    return { ...this.variables };
+  }
+
+  // ==================== 简化控制接口 ====================
+
+  /**
+   * 开始执行（简化版）- 返回SessionResult
+   */
+  async start(): Promise<SessionResult> {
+    return super.start();
+  }
+
+  /**
+   * 取消执行（简化版）- 返回SessionResult
+   */
+  async cancel(): Promise<SessionResult> {
+    return super.cancel();
+  }
+
+  /**
+   * 重置会话（简化版）
+   */
+  async resetSession(): Promise<void> {
+    this.reset();
+  }
+
+  /**
+   * 获取完整结果（简化版）
+   */
+  getResults() {
+    return {
+      stepResults: this.getStepResults(),
+      output: this.getOutput(),
+      error: this.getError(),
+      status: this.status,
+      currentStep: this.getCurrentStepId(),
+      variables: this.getCurrentVariables()
+    };
+  }
+
+  /**
+   * 获取工作流信息
+   */
+  getWorkflowInfo() {
+    return {
+      id: this.workflow.id,
+      name: this.workflow.name,
+      description: this.workflow.description,
+      stepCount: this.workflow.steps.length,
+      steps: this.workflow.steps.map(s => ({
+        id: s.id,
+        name: s.name,
+        prompt: s.prompt
+      }))
+    };
+  }
+
+  /**
+   * 导出执行历史
+   */
+  exportHistory() {
+    return {
+      workflow: this.workflow,
+      results: this.getStepResults(),
+      output: this.getOutput(),
+      error: this.getError(),
+      status: this.status,
+      variables: this.getCurrentVariables()
+    };
+  }
 }

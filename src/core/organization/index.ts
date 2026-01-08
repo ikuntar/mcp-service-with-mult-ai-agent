@@ -1,53 +1,53 @@
 /**
- * 组织架构管理 - 主入口
- * 组织对象存储的成员对象基类是高级Agent
+ * 组织架构 - 主入口（精简版）
  */
 
 // 类型定义
 export {
-  OrganizationRole,
-  OrganizationLevel,
-  MemberStatus,
-  RelationshipType,
   OrganizationEventType
 } from './types';
 
 export type {
+  CollaborationComponentConfig,
   OrganizationMember,
-  OrganizationStructure,
-  OrganizationRelationship,
-  OrganizationConfig,
-  OrganizationActionResult,
-  OrganizationQuery,
+  ProxyExecutionContext,
+  ProxyExecutionResult,
   OrganizationEvent,
-  OrganizationStats,
-  OrganizationValidationResult
+  GlobalOrganizationManagerConfig,
+  OrganizationStats
 } from './types';
 
+// 协作组件接口
+export type { CollaborationComponent } from './collaboration-component';
+
 // 核心组件
-export { OrganizationMemberImpl } from './member';
-export type { OrganizationMemberConfig } from './member';
-
-export { StructureManager } from './structure';
-export type { StructureManagerConfig } from './structure';
-
-export { OrganizationManager } from './manager';
-export type { OrganizationManagerConfig } from './manager';
+export { StandardCollaborationComponent } from './standard-collaboration-component';
+export { GlobalOrganizationManager, globalOrganizationManager } from './global-manager';
 
 // 工厂函数
 export {
-  createOrganizationManager,
-  createOrganization,
-  createMember,
-  createTeam,
-  createDepartment
+  createCollaborationComponent,
+  createOrganizationMember,
+  createProxyExecution,
+  createStandardCollaborationComponent,
+  createCustomCollaborationComponent,
+  createStandardMember
 } from './factory';
 
-// 工具函数
+// 工具前缀管理器
+export { ToolPrefixManager } from './tool-prefix-manager';
+
+// 全局工具提供器
 export {
-  validateOrganizationStructure,
-  getOrganizationStats,
-  findMemberByRole,
-  findMemberByCapability,
-  getRelationshipChain
-} from './utils';
+  getAllCollaborationTools,
+  executeCollaborationTool,
+  getCollaborationComponentsInfo
+} from './global-tool-provider';
+
+// MCP集成
+export {
+  createCollaborationToolsProvider,
+  createCollaborationToolExecutor,
+  createCollaborationComponentsInfoProvider,
+  getAllOrganizationMCPTools
+} from './mcp-integration';

@@ -107,12 +107,16 @@ export {
   initializeToolsetConfigs,
   getToolsetConfig,
   setToolsetDisplayMode,
-  DEFAULT_TOOLSET_CONFIG
+  DEFAULT_TOOLSET_CONFIG,
+  EnhancedPluginBase,
+  createEnhancedPlugin,
+  PluginTemplates
 } from './core/container';
 
 export type {
   Role,
-  ContainerConfig
+  ContainerConfig,
+  EnhancedToolPlugin
 } from './core/container';
 
 // 虚拟化模块
@@ -141,16 +145,102 @@ export { virtualizationManagementTools } from './tools/token-virtualization-tool
 export { asyncTaskTools } from './tools/async-task-tools';
 export { userMessageQueueTools } from './tools/user-message-queue-tools';
 
-// AI-Agent模块
+// 插件导出
+export { FilePlugin } from './plugins/file-plugin';
+export { OrganizationPlugin, createOrganizationPlugin } from './plugins/organization-plugin';
+
+
+// AI-Agent模块 - 重构版本
 export {
-  AgentCore,
+  // 功能性Agent
+  FunctionalAgent,
+  createFunctionalAgent,
+  createFunctionalQuickAgent,
+  
+  // 高级Agent
+  AdvancedAgent,
+  createAdvancedAgent,
+  createAdvancedQuickAgent,
+  
+  // 模板对话
+  createQuickTemplate,
+  
+  // 会话系统
+  TemplateSession,
+  ChatSession,
+  MCPSession,
+  createTemplateSession,
+  createChatSession,
+  createMCPSession,
+  createTemplateWorkflow,
+  createSimpleWorkflow,
+  loadWorkflowFromJSON,
+  createMCPTool,
+  
+  // 模型系统
+  ModelFactory,
+  ModelConfigManager,
+  configManager,
+  
+  // 记忆系统
   SimpleMemory,
-  createAgent
+  
+  // 示例
+  examples
 } from './core/ai-agent';
 
 export type {
   Task,
   ActionResult,
   MemoryItem,
-  AgentState
+  AgentState,
+  FunctionalAgentConfig,
+  AdvancedAgentConfig,
+  WorkflowTemplate,
+  SessionStep,
+  StepResult,
+  MCPToolDefinition
 } from './core/ai-agent';
+
+// 组织架构管理（重构版）
+export {
+  OrganizationEventType
+} from './core/organization/types';
+
+export type {
+  CollaborationComponentConfig,
+  OrganizationMember,
+  ProxyExecutionContext,
+  ProxyExecutionResult,
+  OrganizationEvent,
+  GlobalOrganizationManagerConfig,
+  OrganizationStats,
+  ParsedToolName
+} from './core/organization/types';
+
+export { StandardCollaborationComponent } from './core/organization/standard-collaboration-component';
+export { GlobalOrganizationManager, globalOrganizationManager } from './core/organization/global-manager';
+
+export {
+  createCollaborationComponent,
+  createOrganizationMember,
+  createProxyExecution,
+  createStandardCollaborationComponent,
+  createCustomCollaborationComponent,
+  createStandardMember
+} from './core/organization/factory';
+
+export { ToolPrefixManager } from './core/organization/tool-prefix-manager';
+
+export {
+  getAllCollaborationTools,
+  executeCollaborationTool,
+  getCollaborationComponentsInfo
+} from './core/organization/global-tool-provider';
+
+export {
+  createCollaborationToolsProvider,
+  createCollaborationToolExecutor,
+  createCollaborationComponentsInfoProvider,
+  getAllOrganizationMCPTools
+} from './core/organization/mcp-integration';

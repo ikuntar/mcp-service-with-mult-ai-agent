@@ -91,13 +91,69 @@ export interface ToolPlugin {
   /**
    * 获取插件提供的工具列表
    */
-  getTools(): Tool[];
+  getTools(): Tool[] | Promise<Tool[]>;
   
   /**
    * 插件清理
    * 在服务器关闭时调用，可用于释放资源
    */
   cleanup?(): Promise<void>;
+}
+
+/**
+ * 增强插件接口 - 支持工具展开模式
+ * 继承ToolPlugin并添加配置和显示模式支持
+ */
+export interface EnhancedToolPlugin extends ToolPlugin {
+  /** 工具集配置 */
+  toolsetConfig?: ToolsetConfig;
+  
+  /**
+   * 获取显示的工具列表（根据配置模式）
+   * @param roleName 角色名称（可选）
+   * @returns 显示的工具列表
+   */
+  getDisplayTools?(roleName?: string): Tool[];
+  
+  /**
+   * 是否包含展开命令
+   */
+  hasExpandCommand?(): boolean;
+  
+  /**
+   * 获取展开命令
+   */
+  getExpandCommand?(): Tool | undefined;
+  
+  /**
+   * 设置配置
+   */
+  setConfig?(config: ToolsetConfig): void;
+  
+  /**
+   * 获取配置
+   */
+  getConfig?(): ToolsetConfig | undefined;
+  
+  /**
+   * 工具数量
+   */
+  size?: number;
+  
+  /**
+   * 查找工具
+   */
+  find?(name: string): Tool | undefined;
+  
+  /**
+   * 检查是否包含工具
+   */
+  has?(name: string): boolean;
+  
+  /**
+   * 执行工具
+   */
+  execute?(name: string, args: any): Promise<ToolResult>;
 }
 
 /**

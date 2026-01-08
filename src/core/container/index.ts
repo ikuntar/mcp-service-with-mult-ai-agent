@@ -1,10 +1,11 @@
 /**
  * 容器模块
- * 
+ *
  * 提供工具容器和配置管理，支持：
  * - 增强工具容器
  * - 角色权限控制
  * - 工具集配置
+ * - 增强插件（支持展开模式）
  */
 
 export {
@@ -26,6 +27,12 @@ export {
   DEFAULT_TOOLSET_CONFIG
 } from './toolset-config';
 
+export {
+  EnhancedPluginBase,
+  createEnhancedPlugin,
+  PluginTemplates
+} from './enhanced-plugin';
+
 export type {
   Role,
   ContainerConfig
@@ -34,5 +41,6 @@ export type {
 // 从types.ts导入类型定义
 export type {
   ToolsetConfig,
-  ToolsetDisplayMode
+  ToolsetDisplayMode,
+  EnhancedToolPlugin
 } from '../../types';

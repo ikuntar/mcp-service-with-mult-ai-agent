@@ -20,6 +20,16 @@ export interface TokenInfo {
 }
 
 /**
+ * Token验证结果接口
+ */
+export interface TokenValidationResult {
+  isValid: boolean;
+  role: string | null;
+  tokenInfo: TokenInfo | null;
+  error?: string;
+}
+
+/**
  * Token管理器类
  * 
  * @example
@@ -34,6 +44,9 @@ export interface TokenInfo {
  * 
  * // 验证token
  * const role = tokenManager.validateToken(token);
+ * 
+ * // 详细验证token
+ * const result = tokenManager.validateTokenDetailed(token);
  * 
  * // 获取token信息
  * const info = tokenManager.getTokenInfo(token);
@@ -122,6 +135,59 @@ export class TokenManager {
     this.saveToStorage();
 
     return tokenInfo.role;
+  }
+
+  /**
+   * 验证token并返回详细结果
+   * @param token token字符串
+   * @returns 验证结果对象
+   */
+  validateTokenDetailed(token: string): TokenValidationResult {
+    try {
+      if (!token) {
+        return {
+          isValid: false,
+          role: null,
+          tokenInfo: null,
+          error: '必须提供token参数'
+        };
+      }
+
+      const role = this.validateToken(token);
+      
+      if (!role) {
+        const tokenInfo = this.getTokenInfo(token);
+        if (!tokenInfo) {
+          return {
+            isValid: false,
+            role: null,
+            tokenInfo: null,
+            error: 'token不存在'
+          };
+        }
+        return {
+          isValid: false,
+          role: null,
+          tokenInfo: tokenInfo,
+          error: tokenInfo.isActive ? 'token已过期' : 'token已禁用'
+        };
+      }
+
+      const tokenInfo = this.getTokenInfo(token);
+      return {
+        isValid: true,
+        role,
+        tokenInfo
+      };
+
+    } catch (error) {
+      return {
+        isValid: false,
+        role: null,
+        tokenInfo: null,
+        error: error instanceof Error ? error.message : String(error)
+      };
+    }
   }
 
   /**

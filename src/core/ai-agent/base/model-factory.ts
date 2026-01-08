@@ -3,10 +3,21 @@
  * 创建功能性模型接口或高级模型接口
  */
 
-import { 
-  ModelInterface, 
-  BaseModelConfig, 
-  FunctionalModelConfig, 
+export { ModelInterface } from './model-interface';
+export type {
+  BaseModelConfig,
+  FunctionalModelConfig,
+  AdvancedModelConfig,
+  ModelResponse,
+  ThinkingOptions,
+  ToolDefinition,
+  ToolCall
+} from './model-interface';
+
+import {
+  ModelInterface,
+  BaseModelConfig,
+  FunctionalModelConfig,
   AdvancedModelConfig,
   ModelResponse,
   ThinkingOptions,

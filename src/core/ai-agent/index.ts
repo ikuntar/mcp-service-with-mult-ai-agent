@@ -1,448 +1,262 @@
 /**
- * AI-Agent系统 - 主入口
+ * AI-Agent模块 - 重构版本
+ * 提供功能性Agent和高级Agent作为对外API
  */
 
-// 集成Agent（推荐使用）
-import {
-  IntegratedAgent,
-  FunctionalIntegratedAgent,
-  AdvancedIntegratedAgent,
-  createIntegratedAgent
-} from './base/integrated-agent';
+// 基础类型和接口
+export type { Task, ActionResult, AgentState, MemoryItem } from './base/types';
+
+// 功能性Agent
+export { 
+  FunctionalAgent, 
+  createFunctionalAgent,
+  type FunctionalAgentConfig 
+} from './base/functional-agent';
+
+// 高级Agent
+export { 
+  AdvancedAgent, 
+  createAdvancedAgent,
+  type AdvancedAgentConfig 
+} from './base/advanced-agent';
 
 // 模型系统
-import { ModelFactory, ModelConfigManager } from './base/model-factory';
-import { ProviderConfigManager } from './base/provider-config-manager';
-import { RealModel } from './base/real-model';
+export {
+  ModelFactory,
+  ModelConfigManager,
+  type ModelInterface,
+  type BaseModelConfig as ModelConfig,
+  type FunctionalModelConfig,
+  type AdvancedModelConfig
+} from './base/model-factory';
 
-// 记忆系统
-import { SimpleMemory } from './memory/simple-memory';
-
-// 提示词工程（集成）
-import {
-  PromptManager,
-  SystemPromptFactory,
-  AppendPromptFactory,
-  PromptComposition,
-  SimplePrompt,
-  AgentPromptEngine,
-  createPromptManager
-} from './prompt-engine/index';
-
-// 会话系统
-import {
-  BaseSession,
-  TemplateSession,
+// 会话系统（模板系统和会话系统协作）
+export {
   ChatSession,
+  TemplateSession,
   MCPSession,
-  createTemplateSession,
   createChatSession,
+  createTemplateSession,
   createMCPSession,
   createSimpleWorkflow,
   loadWorkflowFromJSON,
-  createMCPTool
+  createMCPTool,
+  createTemplateWorkflow
 } from './session/index';
 
-// 提示词引擎集成
-import {
-  PromptEngineIntegration,
-  createPromptIntegration,
-  AIAgentWithPromptEngine
-} from './prompts-engine-integration';
-
-// 导出所有组件
-export { IntegratedAgent, FunctionalIntegratedAgent, AdvancedIntegratedAgent, createIntegratedAgent };
-export { ModelFactory, ProviderConfigManager as ModelConfigManager, RealModel };
-export { SimpleMemory };
-export {
-  PromptManager,
-  SystemPromptFactory,
-  AppendPromptFactory,
-  PromptComposition,
-  SimplePrompt,
-  AgentPromptEngine,
-  createPromptManager
-};
-export {
-  BaseSession,
-  TemplateSession,
-  ChatSession,
-  MCPSession,
-  createTemplateSession,
-  createChatSession,
-  createMCPSession,
-  createSimpleWorkflow,
-  loadWorkflowFromJSON,
-  createMCPTool
-};
-export {
-  PromptEngineIntegration,
-  createPromptIntegration,
-  AIAgentWithPromptEngine
-};
-
-// 类型定义
 export type {
-  Task,
-  ActionResult,
-  AgentState,
-  MemoryItem
-} from './base/types';
-
-export type {
-  SystemPromptConfig,
-  AppendPromptConfig,
-  PromptFormat,
-  VariableDefinition,
-  RenderOptions,
-  RenderResult,
-  ValidationResult
-} from './prompt-engine/types';
-
-export type {
-  SessionStatus,
-  SessionMessage,
-  SessionStep,
   WorkflowTemplate,
-  SessionConfig,
-  SessionResult,
-  SessionEvent,
-  EventHandler,
-  TemplateSessionConfig,
-  ChatSessionConfig,
-  MCPSessionConfig,
+  SessionStep,
   StepResult,
-  SessionSnapshot,
-  MCPToolDefinition,
-  MCPToolCall
-} from './session/types';
+  MCPToolDefinition
+} from './session/index';
+
+// 记忆系统
+export { SimpleMemory } from './memory/simple-memory';
 
 /**
- * 快速创建Agent（使用集成Agent）
+ * 快速创建功能性Agent（推荐用于简单对话）
+ * 本质：对话生成器，无Token生态
  */
-export function createAgent(
-  type: 'functional' | 'advanced',
-  config: any
-) {
-  if (type === 'functional') {
-    return new FunctionalIntegratedAgent(config);
-  } else {
-    return new AdvancedIntegratedAgent(config);
-  }
-}
-
-/**
- * 快速创建带提示词的Agent
- */
-export function createAgentWithPrompt(
-  type: 'functional' | 'advanced',
-  agentConfig: any,
-  promptConfig: {
-    role: string;
-    task?: string;
-    format?: 'json' | 'markdown' | 'text';
-  }
-) {
-  const agent = createAgent(type, agentConfig);
-  const engine = new AgentPromptEngine();
-  
-  const prompt = engine.quickAgentPrompt(
-    promptConfig.role,
-    promptConfig.task || '执行任务',
-    promptConfig.format || 'json'
-  );
-
-  return {
-    agent,
-    prompt,
-    execute: async (taskInput: string) => {
-      return await agent.execute({
-        id: 'task-' + Date.now(),
-        input: prompt + '\n\n任务：' + taskInput
-      });
-    }
-  };
-}
-
-/**
- * 快速创建功能性Agent（使用集成Agent）
- */
-export function createFunctionalAgent(
-  config: any,
-  memory?: SimpleMemory,
-  modelConfigManager?: any
-) {
-  return new FunctionalIntegratedAgent({
-    ...config,
-    modelId: config.modelId || 'functional-mock'
-  });
-}
-
-/**
- * 快速创建高级Agent（使用集成Agent）
- */
-export function createAdvancedAgent(
-  config: any,
-  memory?: SimpleMemory,
-  modelConfigManager?: any
-) {
-  return new AdvancedIntegratedAgent({
-    ...config,
-    modelId: config.modelId || 'advanced-mock'
-  });
-}
-
-/**
- * 创建默认功能性Agent
- */
-export function createDefaultFunctionalAgent() {
-  const manager = ProviderConfigManager.getInstance();
-  manager.loadFromEnv();
-  
-  // 使用ModelConfigManager来管理模型配置
-  const modelManager = ModelConfigManager.getInstance();
-  modelManager.loadFromEnv();
-  
-  return new FunctionalIntegratedAgent({
-    id: 'default-functional',
-    name: '默认功能助手',
-    role: '助手',
-    modelId: 'functional-mock',
-    mcpEndpoint: 'http://localhost:3000/mcp'
-  });
-}
-
-/**
- * 创建默认高级Agent
- */
-export function createDefaultAdvancedAgent() {
-  const manager = ProviderConfigManager.getInstance();
-  manager.loadFromEnv();
-  
-  // 使用ModelConfigManager来管理模型配置
-  const modelManager = ModelConfigManager.getInstance();
-  modelManager.loadFromEnv();
-  
-  return new AdvancedIntegratedAgent({
-    id: 'default-advanced',
-    name: '默认智能助手',
-    role: '专家助手',
-    modelId: 'advanced-mock',
-    mcpEndpoint: 'http://localhost:3000/mcp',
-    tools: []
-  });
-}
-
-/**
- * 定义工具
- */
-export function defineTool(name: string, description: string, parameters: any) {
-  return {
-    name,
-    description,
-    parameters
-  };
-}
-
-/**
- * 兼容旧API - 工厂函数（使用集成Agent）
- */
-export const AgentFactory = {
-  /**
-   * 创建功能性Agent
-   */
-  createFunctional(config: any) {
-    return new FunctionalIntegratedAgent(config);
-  },
-
-  /**
-   * 创建高级Agent
-   */
-  createAdvanced(config: any) {
-    return new AdvancedIntegratedAgent(config);
-  },
-
-  /**
-   * 创建带提示词的功能性Agent
-   */
-  createFunctionalWithPrompt(config: any, prompt: { role: string; task?: string }) {
-    return createAgentWithPrompt('functional', config, {
-      role: prompt.role,
-      task: prompt.task,
-      format: 'text'
-    });
-  },
-
-  /**
-   * 创建带提示词的高级Agent
-   */
-  createAdvancedWithPrompt(config: any, prompt: { role: string; task?: string; format?: 'json' | 'markdown' | 'text' }) {
-    return createAgentWithPrompt('advanced', config, prompt);
-  }
-};
-
-/**
- * MCP会话工厂 - 快速创建MCP会话
- */
-export const MCPSessionFactory = {
-  /**
-   * 创建MCP会话
-   */
-  create(id: string, config: {
-    mcpEndpoint: string;
-    mcpHeaders?: Record<string, string>;
-    tools?: Array<{
-      name: string;
-      description: string;
-      parameters?: {
-        type: 'object';
-        properties: Record<string, {
-          type: 'string' | 'number' | 'boolean';
-          description?: string;
-          enum?: string[];
-        }>;
-        required?: string[];
-      };
-    }>;
-    initialContext?: string;
-    timeout?: number;
-  }): MCPSession {
-    return createMCPSession(id, config);
-  },
-
-  /**
-   * 从工具定义创建MCP会话
-   */
-  createFromToolDefinitions(id: string, endpoint: string, tools: any[], headers?: Record<string, string>) {
-    return createMCPSession(id, {
-      mcpEndpoint: endpoint,
-      mcpHeaders: headers,
-      tools: tools,
-      initialContext: 'MCP工具会话'
-    });
-  },
-
-  /**
-   * 创建带系统提示的MCP会话
-   */
-  createWithSystemPrompt(id: string, config: {
-    mcpEndpoint: string;
-    systemPrompt: string;
-    tools?: any[];
-    mcpHeaders?: Record<string, string>;
-  }): MCPSession {
-    const session = createMCPSession(id, {
-      mcpEndpoint: config.mcpEndpoint,
-      mcpHeaders: config.mcpHeaders,
-      tools: config.tools || [],
-      initialContext: config.systemPrompt
-    });
-    return session;
-  }
-};
-
-/**
- * 集成Agent工厂 - 快速创建集成Agent
- */
-export const IntegratedAgentFactory = {
-  /**
-   * 创建集成Agent
-   */
-  create(id: string, config: {
-    name: string;
-    role: string;
+export function createFunctionalQuickAgent(
+  name: string,
+  options?: {
+    role?: string;
     personality?: string;
     capabilities?: string[];
-    modelId: string;
-    mcpEndpoint: string;
-    mcpHeaders?: Record<string, string>;
-    tools?: Array<{
-      name: string;
-      description: string;
-      parameters?: any;
-    }>;
-    maxRetries?: number;
-    baseRetryDelay?: number;
-    maxMemoryItems?: number;
-  }): IntegratedAgent {
-    return createIntegratedAgent({
-      id,
-      ...config
-    });
-  },
+    systemPrompt?: string;
+  }
+) {
+  const { FunctionalAgent } = require('./base/functional-agent');
+  return new FunctionalAgent({
+    id: `func-${Date.now()}`,
+    name,
+    role: options?.role || '助手',
+    personality: options?.personality || '友好',
+    capabilities: options?.capabilities || ['对话'],
+    systemPrompt: options?.systemPrompt
+  });
+}
 
-  /**
-   * 创建功能性集成Agent
-   */
-  createFunctional(id: string, config: {
-    name: string;
-    role: string;
-    mcpEndpoint: string;
-    mcpHeaders?: Record<string, string>;
-    tools?: Array<{
-      name: string;
-      description: string;
-      parameters?: any;
-    }>;
-  }): FunctionalIntegratedAgent {
-    return new FunctionalIntegratedAgent({
-      id,
-      ...config,
-      modelId: 'functional-mock'
-    });
-  },
+/**
+ * 快速创建高级Agent（推荐用于复杂任务和工具调用）
+ * 本质：拥有完整Token生态，对外仅暴露对话接口
+ * Token生态管理由外部组件完成
+ */
+export function createAdvancedQuickAgent(
+  name: string,
+  options?: {
+    role?: string;
+    personality?: string;
+    capabilities?: string[];
+    token?: string;
+    tokenKey?: string;
+  }
+) {
+  const { AdvancedAgent } = require('./base/advanced-agent');
+  return new AdvancedAgent({
+    id: `adv-${Date.now()}`,
+    name,
+    role: options?.role || '专家助手',
+    personality: options?.personality || '专业',
+    capabilities: options?.capabilities || ['复杂推理', '工具调用'],
+    token: options?.token,
+    tokenKey: options?.tokenKey
+  });
+}
 
-  /**
-   * 创建高级集成Agent
-   */
-  createAdvanced(id: string, config: {
-    name: string;
-    role: string;
-    modelId?: string;
-    mcpEndpoint: string;
-    mcpHeaders?: Record<string, string>;
-    tools?: Array<{
-      name: string;
-      description: string;
-      parameters?: any;
-    }>;
-  }): AdvancedIntegratedAgent {
-    return new AdvancedIntegratedAgent({
-      id,
-      ...config,
-      modelId: config.modelId || 'advanced-mock'
-    });
-  },
+/**
+ * 快速创建模板对话（推荐用于固定流程）
+ * 与会话系统协作，提供状态获取和中断能力
+ * 不提供流程编程控制API
+ */
+export function createQuickTemplate(
+  name: string,
+  steps: Array<{ name: string; prompt: string; variables?: Record<string, any> }>,
+  initialVariables?: Record<string, any>
+) {
+  const { createTemplateWorkflow } = require('./session/index');
+  return createTemplateWorkflow(
+    `temp-${Date.now()}`,
+    steps,
+    initialVariables
+  );
+}
 
+/**
+ * 配置管理器（用于环境配置）
+ */
+export const configManager = {
   /**
-   * 创建带系统提示的集成Agent
+   * 从环境变量加载模型配置
    */
-  createWithSystemPrompt(id: string, config: {
-    name: string;
-    role: string;
-    systemPrompt: string;
-    modelType: 'functional' | 'advanced';
-    mcpEndpoint: string;
-    mcpHeaders?: Record<string, string>;
-    tools?: Array<{
-      name: string;
-      description: string;
-      parameters?: any;
-    }>;
-  }): IntegratedAgent {
-    const agentConfig = {
-      id,
-      name: config.name,
-      role: config.role,
-      modelId: config.modelType === 'functional' ? 'functional-mock' : 'advanced-mock',
-      mcpEndpoint: config.mcpEndpoint,
-      mcpHeaders: config.mcpHeaders,
-      tools: config.tools,
-      initialContext: config.systemPrompt
+  loadModelsFromEnv(): void {
+    const { ModelConfigManager } = require('./base/model-factory');
+    const modelManager = ModelConfigManager.getInstance();
+    modelManager.loadFromEnv();
+    console.log('[Config] 模型配置已从环境变量加载');
+  },
+  
+  /**
+   * 获取可用模型列表
+   */
+  getAvailableModels() {
+    const { ModelConfigManager } = require('./base/model-factory');
+    const modelManager = ModelConfigManager.getInstance();
+    return {
+      functional: modelManager.getAllFunctionalModels(),
+      advanced: modelManager.getAllAdvancedModels()
     };
+  }
+};
 
-    return config.modelType === 'functional'
-      ? new FunctionalIntegratedAgent(agentConfig)
-      : new AdvancedIntegratedAgent(agentConfig);
+/**
+ * 使用示例和说明
+ */
+export const examples = {
+  /**
+   * 示例1：功能性Agent - 简单对话
+   */
+  functionalAgent: async () => {
+    const agent = createFunctionalQuickAgent('小助手');
+    
+    // 单次任务
+    const result1 = await agent.execute({ id: 'task-1', input: '你好' });
+    console.log('单次任务:', result1.output);
+    
+    // 连续对话
+    await agent.startChat();
+    const response = await agent.sendMessage('今天天气如何？');
+    console.log('连续对话:', response);
+    await agent.stopChat();
+  },
+
+  /**
+   * 示例2：高级Agent - Token生态（由外部管理）
+   */
+  advancedAgent: async () => {
+    // Token生态管理由外部组件完成
+    // 这里只提供Token，工具可见性由Token决定
+    const agent = createAdvancedQuickAgent('专家', {
+      role: '工具专家',
+      token: process.env.MCP_TOKEN || 'your-token'
+    });
+    
+    // 单次任务（支持工具调用）
+    const result = await agent.execute({
+      id: 'task-1',
+      input: '计算 100 + 200'
+    });
+    console.log('工具调用结果:', result.output);
+    
+    // 连续对话
+    await agent.startChat();
+    const response = await agent.sendMessage('@calculate(expression=100+200)');
+    console.log('连续对话:', response);
+    await agent.stopChat();
+  },
+
+  /**
+   * 示例3：模板对话 - 状态获取和中断
+   */
+  templateFlow: async () => {
+    const session = createQuickTemplate('数据分析', [
+      { name: '读取数据', prompt: '读取文件: {{filename}}' },
+      { name: '分析趋势', prompt: '分析数据: {{data}}' },
+      { name: '生成报告', prompt: '生成总结' }
+    ], { filename: 'sales.csv' });
+    
+    // 获取状态（只能获取状态，不能控制流程）
+    console.log('初始状态:', session.getStatus());
+    
+    // 开始执行
+    await session.start();
+    
+    // 获取结果
+    const results = session.getResults();
+    console.log('执行结果:', results.output);
+    console.log('步骤详情:', results.stepResults);
+    
+    // 可以获取工作流信息
+    const info = session.getWorkflowInfo();
+    console.log('工作流信息:', info);
+  },
+
+  /**
+   * 示例4：Token生态外部管理
+   */
+  tokenEcosystem: async () => {
+    // 外部组件负责Token生态管理
+    // 例如：工具清单、可见性、约束等
+    
+    const tokenManager = {
+      // 获取Token
+      getToken: () => process.env.MCP_TOKEN,
+      
+      // 获取工具清单（由Token决定）
+      getTools: (token: string) => {
+        // 外部逻辑：根据Token返回可见的工具列表
+        return [
+          { name: 'calculate', description: '计算器' },
+          { name: 'search', description: '搜索工具' }
+        ];
+      },
+      
+      // 应用约束
+      applyConstraints: (agent: any) => {
+        // 外部逻辑：根据策略约束Agent行为
+        console.log('应用约束策略');
+      }
+    };
+    
+    const token = tokenManager.getToken();
+    const agent = createAdvancedQuickAgent('受控专家', { token });
+    
+    // 外部管理工具可见性
+    const visibleTools = tokenManager.getTools(token!);
+    console.log('可见工具:', visibleTools);
+    
+    // 应用外部约束
+    tokenManager.applyConstraints(agent);
   }
 };

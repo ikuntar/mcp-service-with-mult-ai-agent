@@ -135,3 +135,19 @@ export function createMCPTool(
     parameters
   };
 }
+
+/**
+ * 快速创建模板工作流（增强版）
+ * 这是统一的模板会话创建函数，提供简化的控制接口
+ */
+export function createTemplateWorkflow(
+  id: string,
+  steps: Array<{ name: string; prompt: string; variables?: Record<string, any> }>,
+  initialVariables?: Record<string, any>
+): TemplateSession {
+  const workflow = createSimpleWorkflow(id, steps);
+  return new TemplateSession(id, {
+    workflow,
+    initialVariables
+  });
+}

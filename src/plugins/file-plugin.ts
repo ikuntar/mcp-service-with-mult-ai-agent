@@ -1,23 +1,39 @@
-import type { ToolPlugin, Tool, ToolResult, PluginContext } from '../types';
+import type { Tool, ToolResult, PluginContext } from '../types';
+import { EnhancedPluginBase, PluginTemplates } from '../core/container/enhanced-plugin';
 
 /**
  * 文件操作插件
- * 演示插件化架构：共享文件缓存和状态管理
+ * 演示插件化架构：支持两种展开方式，共享文件缓存和状态管理
  */
-export class FilePlugin implements ToolPlugin {
-  name = 'file-tools';
-  description = '文件操作工具集，支持读取、写入、搜索和缓存';
-  
-  private context?: PluginContext;
+export class FilePlugin extends EnhancedPluginBase {
   private fileCache?: Map<string, { content: string; timestamp: number }>;
   private cacheTTL = 5 * 60 * 1000; // 5分钟缓存
+
+  constructor() {
+    // 使用展开模式配置
+    const config = PluginTemplates.expanded(
+      '文件插件',
+      '文件操作工具集，支持读取、写入、搜索和缓存'
+    );
+    
+    super('file-tools', '文件操作工具集，支持读取、写入、搜索和缓存', config);
+    
+    // 注册工具
+    this.registerTools([
+      this.createReadFileTool(),
+      this.createWriteFileTool(),
+      this.createSearchFileTool(),
+      this.createClearCacheTool()
+    ]);
+  }
 
   /**
    * 插件初始化
    * 创建共享的文件缓存
    */
   async initialize(context: PluginContext): Promise<void> {
-    this.context = context;
+    await super.initialize?.(context);
+    
     this.fileCache = new Map();
     
     // 在共享状态中注册文件缓存，其他插件也可以访问
@@ -25,18 +41,6 @@ export class FilePlugin implements ToolPlugin {
     context.sharedState.set('filePluginInstance', this);
     
     console.log('[FilePlugin] 文件插件初始化完成，缓存已创建');
-  }
-
-  /**
-   * 获取插件提供的所有工具
-   */
-  getTools(): Tool[] {
-    return [
-      this.createReadFileTool(),
-      this.createWriteFileTool(),
-      this.createSearchFileTool(),
-      this.createClearCacheTool()
-    ];
   }
 
   /**
